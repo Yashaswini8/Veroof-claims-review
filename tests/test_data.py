@@ -40,10 +40,14 @@ def test_eight_samples_exist():
 def test_sample_files_exist(sample_id, claim_type, second_kind):
     sample = sample_loader.load_sample(sample_id)
     assert sample is not None, f"sample {sample_id} missing from manifest"
+    assert sample["claim_type"] == claim_type, f"sample {sample_id} claim_type mismatch"
+    assert (
+        sample["second_document_kind"] == second_kind
+    ), f"sample {sample_id} second kind mismatch"
     d = os.path.join(CLAIMS_DIR(), sample["dir"])
     for rel in [
         sample["claim_form"],
-        sample[second_kind],
+        sample["second_document"],
         sample["incident_description"],
     ]:
         assert os.path.exists(os.path.join(d, rel)), f"missing file {rel} in {d}"
@@ -51,3 +55,11 @@ def test_sample_files_exist(sample_id, claim_type, second_kind):
 
 def CLAIMS_DIR():
     return os.path.join(ROOT, "data", "claims")
+
+def test_policy_chunks_cover_exclusions_and_requirements():
+    from src import policy
+    chunks = policy.chunk_policy()
+    numbers = [c['number'] for c in chunks]
+    for num in ['4.1','4.2','4.3','4.4','3.2','6.1','6.3','6.4']:
+        assert num in numbers, f'missing clause {num}'
+
