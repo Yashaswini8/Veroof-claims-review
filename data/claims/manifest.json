@@ -1,0 +1,100 @@
+{
+  "samples": [
+    {
+      "id": "c001",
+      "title": "Clean accident claim (two-wheeler, self-skid)",
+      "category": "Clean",
+      "claim_type": "accident",
+      "dir": "c001-clean-accident",
+      "claim_form": "claim_form.md",
+      "second_document_kind": "estimate",
+      "second_document": "estimate.md",
+      "incident_description": "incident_description.md",
+      "expected": "approve"
+    },
+    {
+      "id": "c002",
+      "title": "Clean theft claim (car, all documents present)",
+      "category": "Clean",
+      "claim_type": "theft",
+      "dir": "c002-clean-theft",
+      "claim_form": "claim_form.md",
+      "second_document_kind": "fir",
+      "second_document": "fir.md",
+      "incident_description": "incident_description.md",
+      "expected": "approve"
+    },
+    {
+      "id": "c003",
+      "title": "Date mismatch between FIR and claim form (theft)",
+      "category": "Dated problem",
+      "claim_type": "theft",
+      "dir": "c003-date-mismatch-theft",
+      "claim_form": "claim_form.md",
+      "second_document_kind": "fir",
+      "second_document": "fir.md",
+      "incident_description": "incident_description.md",
+      "expected": "escalate"
+    },
+    {
+      "id": "c004",
+      "title": "Claimed amount exceeds IDV (total loss flag)",
+      "category": "Amount problem",
+      "claim_type": "accident",
+      "dir": "c004-amount-exceeds-idv",
+      "claim_form": "claim_form.md",
+      "second_document_kind": "estimate",
+      "second_document": "estimate.md",
+      "incident_description": "incident_description.md",
+      "expected": "flag"
+    },
+    {
+      "id": "c005",
+      "title": "Theft claim missing key handover (incomplete docs)",
+      "category": "Missing document",
+      "claim_type": "theft",
+      "dir": "c005-missing-key-handover",
+      "claim_form": "claim_form.md",
+      "second_document_kind": "fir",
+      "second_document": "fir.md",
+      "incident_description": "incident_description.md",
+      "expected": "request_info"
+    },
+    {
+      "id": "c006",
+      "title": "Accident claim filed outside intimation window",
+      "category": "Dated problem",
+      "claim_type": "accident",
+      "dir": "c006-late-intimation",
+      "claim_form": "claim_form.md",
+      "second_document_kind": "estimate",
+      "second_document": "estimate.md",
+      "incident_description": "incident_description.md",
+      "expected": "reject"
+    },
+    {
+      "id": "c007",
+      "title": "Incident narrative contradicts the repair estimate (rear vs front)",
+      "category": "Contradiction",
+      "claim_type": "accident",
+      "dir": "c007-damage-contradiction",
+      "claim_form": "claim_form.md",
+      "second_document_kind": "estimate",
+      "second_document": "estimate.md",
+      "incident_description": "incident_description.md",
+      "expected": "escalate"
+    },
+    {
+      "id": "c008",
+      "title": "Commercial use of a private-use-only vehicle (exclusion)",
+      "category": "Exclusion",
+      "claim_type": "accident",
+      "dir": "c008-commercial-use",
+      "claim_form": "claim_form.md",
+      "second_document_kind": "estimate",
+      "second_document": "estimate.md",
+      "incident_description": "incident_description.md",
+      "expected": "reject"
+    }
+  ]
+}
