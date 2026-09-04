@@ -242,11 +242,19 @@ def _deterministic_extract(doc_type: str, text: str) -> models.ExtractedDocument
     if amt_txt:
         doc.claimed_amount = _extract_money(amt_txt)
 
-    doc.incident_date = _extract_date(
-        get("date of incident", "incident date", "date theft discovered", "date of theft", "date of incident") or clean
-    )
+    # Normative dates, looked up by label. Type-aware: estimates carry no
+    # incident date, FIR documents carry a report/fir date.
+    if doc_type == "estimate":
+        doc.incident_date = None
+    else:
+        doc.incident_date = _extract_date(
+            get(
+                "date of incident", "incident date", "date theft discovered",
+                "date of theft", "date vehicle last seen",
+            )
+            or clean
+        )
 
-    # Normative dates, looked up by label.
     def flag_date(*labels):
         v = get(*labels)
         return _extract_date(v) if v else None
@@ -271,6 +279,16 @@ def _deterministic_extract(doc_type: str, text: str) -> models.ExtractedDocument
         doc.flags["policy_valid_until"] = _extract_date(right) or doc.flags.get(
             "policy_valid_until"
         )
+
+    # Checklist of submissions → aux-document flags (claim forms list these).
+    _checklist_flags(clean, doc.flags)
+
+    # Hypothecation (NOC is only required when the vehicle is financed).
+    hyp = get("financer", "hypothecation")
+    if hyp and "not" not in hyp.lower() and "non" not in hyp.lower():
+        doc.flags["vehicle_hypothecated"] = True
+        if "n/a" in hyp.lower() or "none" in hyp.lower() or "no " in hyp.lower():
+            doc.flags["vehicle_hypothecated"] = False
 
     # Heuristic flag scan (fallback path only; the LLM path does this properly).
     low = clean.lower()
@@ -298,6 +316,38 @@ def _deterministic_extract(doc_type: str, text: str) -> models.ExtractedDocument
     if any(k in low for k in ["no license", "without a license", "without a valid driving license"]):
         doc.flags["valid_license"] = False
     return doc
+
+
+def _checklist_flags(clean: str, flags: dict) -> None:
+    """Extract submission status from 'Checklist of Submissions' sections.
+
+    Matches lines like "- Attested RC copy — attached" / "- key handover —
+    will be submitted later" and flips the corresponding doc flags.
+    """
+    checklist_map = {
+        "claim form": ("claim_form", None),
+        "fir": ("fir_submitted", "fir"),
+        "rc": ("rc_submitted", "rc"),
+        "policy schedule": ("policy_schedule_submitted", "policy_schedule"),
+        "certificate of insurance": ("policy_schedule_submitted", "certificate"),
+        "key": ("key_handover_submitted", "key"),
+        "noc": ("noc_submitted", "noc"),
+    }
+    for line in clean.splitlines():
+        if "\u2014" not in line:
+            continue
+        label, _, status = line.partition("\u2014")
+        status = status.strip().lower()
+        low_label = label.strip().lower()
+        for needle, (flag, _) in checklist_map.items():
+            if needle in low_label:
+                present = any(w in status for w in ("attach", "submitt", "provide", "yes"))
+                absent = any(w in status for w in ("later", "missing", "not applic", "pending", "none"))
+                if present:
+                    flags[flag] = True
+                elif absent:
+                    flags[flag] = False
+                break
 
 
 def _extract_money(text: str) -> Optional[float]:

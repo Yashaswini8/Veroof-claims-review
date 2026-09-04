@@ -49,6 +49,11 @@ def parse_iso(value: Optional[str]) -> Optional[dt.date]:
 def check_doc_presence(payload: models.ReviewRequest, docs: list) -> models.DocPresence:
     """Return which required documents are present/missing for the claim type."""
     required = list(REQUIRED_DOCS[payload.claim_type])
+
+    # The NOC is only required when the vehicle is hypothecated (Clause 6.4(f)).
+    if "noc_financier" in required and not _is_hypothecated(docs):
+        required.remove("noc_financier")
+
     present: list[str] = []
     missing: list[str] = []
 
@@ -73,6 +78,15 @@ def check_doc_presence(payload: models.ReviewRequest, docs: list) -> models.DocP
                 missing.append(req)
 
     return models.DocPresence(required=required, present=present, missing=missing)
+
+
+def _is_hypothecated(docs: list) -> bool:
+    for doc in docs:
+        if doc.flags.get("vehicle_hypothecated") is True:
+            return True
+        if doc.flags.get("vehicle_hypothecated") is False:
+            return False
+    return True  # conservative: if unknown, assume financed so NOC stays required
 
 
 def _doc_present(req: str, payload: models.ReviewRequest, have: set) -> bool:

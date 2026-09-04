@@ -35,7 +35,7 @@ The motorcycle was stolen from Fort Kochi on the night of 19–20 February 2026.
 - Attested RC copy — attached
 - Policy Schedule — attached
 - Original key / key handover — attached
-- NOC from financier — not applicable (no hypoth\u00e9cation)
+- NOC from financier — not applicable (no hypothecation)
 
 ## Declaration
 
