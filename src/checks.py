@@ -284,6 +284,7 @@ def check_dates(
 def check_amount_vs_idv(
     claimed_amount: Optional[float],
     idv: Optional[float],
+    claim_type: str = "accident",
 ) -> models.CheckResult:
     """Flag claims where amount meets/exceeds IDV (Clause 3.2)."""
     if claimed_amount is None or idv is None:
@@ -307,6 +308,17 @@ def check_amount_vs_idv(
                 "assess for total loss and flag for higher approval.",
             ],
         )
+    if claim_type == "theft" and abs(claimed_amount - idv) <= 1:
+        # For theft, the settlement basis IS the IDV (Clause 7.1).
+        return models.CheckResult(
+            name="amount_vs_idv",
+            label="Claimed amount vs Insured Declared Value",
+            status="pass",
+            details=[
+                f"Claimed amount ₹{claimed_amount:,.0f} equals the IDV ₹{idv:,.0f}, "
+                "the correct settlement basis for a theft loss (Clause 7.1)."
+            ],
+        )
     if claimed_amount > 0.85 * idv:
         return models.CheckResult(
             name="amount_vs_idv",
@@ -315,6 +327,16 @@ def check_amount_vs_idv(
             details=[
                 f"Claimed amount ₹{claimed_amount:,.0f} is close to IDV ₹{idv:,.0f} "
                 "(>85%). Consider total-loss assessment (Clause 3.2)."
+            ],
+        )
+    if claim_type == "theft":
+        # Theft claims normally claim the IDV; a lower claim should be flagged for review.
+        return models.CheckResult(
+            name="amount_vs_idv",
+            label="Claimed amount vs Insured Declared Value",
+            status="pass",
+            details=[
+                f"Claimed amount ₹{claimed_amount:,.0f} is below IDV ₹{idv:,.0f}."
             ],
         )
     return models.CheckResult(
@@ -489,6 +511,7 @@ def run_all(
         check_amount_vs_idv(
             claimed_amount=_pick(claim, "claimed_amount") or _pick(second, "estimate_amount"),
             idv=_pick(claim, "idv") or _pick(second, "idv"),
+            claim_type=payload.claim_type,
         )
     )
     results.extend(check_exclusion_flags(docs))
@@ -511,4 +534,12 @@ def _pick(doc_or_docs, attr: str):
         return None
     if doc_or_docs is None:
         return None
-    return getattr(doc_or_docs, attr, None)
+    if hasattr(doc_or_docs, attr):
+        val = getattr(doc_or_docs, attr, None)
+        if val is not None:
+            return val
+    # Normative dates live in the flags bag (set by extraction normalization).
+    flags = getattr(doc_or_docs, "flags", {}) or {}
+    if attr in flags and flags[attr] is not None:
+        return flags[attr]
+    return None
