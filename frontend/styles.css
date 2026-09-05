@@ -1480,3 +1480,72 @@ textarea::placeholder {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---- Print / PDF ------------------------------------------------------ */
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Only the active view prints */
+  .view {
+    display: none !important;
+  }
+  .view.active {
+    display: block !important;
+  }
+
+  .topbar,
+  .footer,
+  .btn,
+  .why-glyph,
+  .why-tip,
+  .clause-chevron {
+    display: none !important;
+  }
+
+  .wrap {
+    padding: 0;
+    max-width: none;
+  }
+
+  .report-toolbar {
+    border-bottom: 1px solid #ccc;
+    padding-bottom: var(--sp-3);
+  }
+
+  .report-section,
+  .disposition-banner,
+  .contra-card,
+  .clause-card,
+  .finding-item {
+    break-inside: avoid;
+    box-shadow: none !important;
+  }
+
+  .report-section,
+  .clause-card,
+  .contra-card,
+  .finding-item {
+    border: 1px solid #ddd !important;
+  }
+
+  .clause-body {
+    display: block !important;
+    padding: 0 var(--sp-4) var(--sp-4);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    break-after: avoid;
+  }
