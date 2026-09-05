@@ -34,6 +34,7 @@ const state = {
   samples: [],
   reviewsCache: new Map(), // job_id -> report
   polling: null,
+  recentFilters: { disposition: "", type: "" },
 };
 
 /* ---------- Disposition metadata ---------------------------------------- */
@@ -686,15 +687,26 @@ async function loadRecent() {
     const res = await fetch(`${API}/reviews`);
     if (!res.ok) throw new Error("reviews fetch failed");
     const data = await res.json();
-    const reviews = data.reviews || [];
+    const { disposition = "", type = "" } = state.recentFilters || {};
+    const reviews = (data.reviews || []).filter(
+      (r) =>
+        (!disposition || r.disposition === disposition) &&
+        (!type || r.claim_type === type)
+    );
+    animateCount($("#recent-count"), (data.reviews || []).length);
     if (reviews.length === 0) {
-      grid.innerHTML = `<div class="contra-detail" style="grid-column:1/-1">No reviews yet this session. Run a claim review and it will appear here.</div>`;
+      grid.innerHTML = `<div class="contra-detail" style="grid-column:1/-1">${
+        (data.reviews || []).length === 0
+          ? "No reviews yet this session. Run a claim review and it will appear here."
+          : "No reviews match the current filters."
+      }</div>`;
       return;
     }
     grid.innerHTML = "";
-    reviews.forEach((r) => {
+    reviews.forEach((r, i) => {
       const card = document.createElement("div");
       card.className = "recent-card";
+      card.style.animationDelay = `${Math.min(i * 0.05, 0.45)}s`;
       const chip = `<span class="status-chip status-disposition ${esc(r.disposition)}"><span class="dot"></span>${esc(r.disposition.replace("_", " "))}</span>`;
       card.innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-2)">
@@ -709,6 +721,32 @@ async function loadRecent() {
   } catch (e) {
     grid.innerHTML = `<div class="contra-detail">Could not load recent reviews.</div>`;
   }
+}
+
+function animateCount(el, target) {
+  if (!el) return;
+  if (!target || target <= 0) {
+    el.textContent = String(target || 0);
+    return;
+  }
+  const start = performance.now();
+  const dur = 380;
+  const step = (t) => {
+    const k = Math.min((t - start) / dur, 1);
+    el.textContent = String(Math.round(target * (1 - Math.pow(1 - k, 3))));
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+function bindProofSteps() {
+  $$(".proof-step").forEach((step) => {
+    step.addEventListener("click", () => {
+      const wasActive = step.classList.contains("proof-active");
+      $$(".proof-step").forEach((o) => o.classList.remove("proof-active"));
+      if (!wasActive) step.classList.add("proof-active");
+    });
+  });
 }
 
 async function reopenReview(jobId) {
@@ -755,6 +793,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   bindClaimType();
   bindSampleSelects();
   bindInputs();
+  bindProofSteps();
   setClaimType("accident");
   updateRequiredDocs();
   updateInputHints();

@@ -342,6 +342,35 @@ a {
   color: var(--ink-faint);
 }
 
+/* Gentle entrance — hero copy lifts in as a block, proof panel a beat later.
+   Fast, subtle, and re-runs whenever the landing view opens. */
+.hero .hero-eyebrow,
+.hero h1,
+.hero .hero-lead,
+.hero .hero-ctas,
+.hero .hero-note,
+.hero .proof-panel {
+  animation: fade-up 0.42s ease both;
+}
+
+.hero .hero-eyebrow { animation-delay: 0.03s; }
+.hero h1 { animation-delay: 0.08s; }
+.hero .hero-lead { animation-delay: 0.13s; }
+.hero .hero-ctas { animation-delay: 0.18s; }
+.hero .hero-note { animation-delay: 0.23s; }
+.hero .proof-panel { animation-delay: 0.12s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero .hero-eyebrow,
+  .hero h1,
+  .hero .hero-lead,
+  .hero .hero-ctas,
+  .hero .hero-note,
+  .hero .proof-panel {
+    animation: none;
+  }
+}
+
 /* Landing side: process steps */
 
 .proof-panel {
@@ -382,6 +411,49 @@ a {
   display: flex;
   gap: var(--sp-3);
   align-items: flex-start;
+  margin: 0 calc(var(--sp-3) * -1);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  cursor: default;
+  outline: none;
+  transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.proof-step:hover,
+.proof-step:focus-visible,
+.proof-step.proof-active {
+  background: var(--surface-2);
+  transform: translateX(3px);
+  box-shadow: var(--shadow-1);
+}
+
+.proof-step:hover .proof-step-num,
+.proof-step:focus-visible .proof-step-num,
+.proof-step.proof-active .proof-step-num {
+  background: var(--brand);
+  color: #fff;
+}
+
+.proof-step-extra {
+  display: none;
+  font-size: 12.5px;
+  color: var(--brand);
+  margin: var(--sp-1) 0 0 !important;
+}
+
+.proof-step:hover .proof-step-extra,
+.proof-step:focus-visible .proof-step-extra,
+.proof-step.proof-active .proof-step-extra {
+  display: block;
+  animation: fade-up 0.22s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .proof-step,
+  .proof-step:hover,
+  .proof-step.proof-active {
+    transform: none;
+  }
 }
 
 .proof-step-num {
@@ -442,6 +514,24 @@ a {
   box-shadow: var(--shadow-1);
   cursor: pointer;
   transition: all 0.18s ease;
+  animation: fade-up 0.32s ease both;
+}
+
+.recent-count {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--brand);
+  background: var(--brand-soft);
+  border-radius: var(--r-pill);
+  padding: 2px 10px;
+  vertical-align: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recent-card {
+    animation: none;
+  }
 }
 
 .recent-card:hover {

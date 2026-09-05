@@ -51,32 +51,36 @@
           <div class="proof-panel">
             <div class="proof-title">&#9935;&nbsp; How a review works</div>
             <div class="proof-steps">
-              <div class="proof-step">
+              <div class="proof-step" tabindex="0">
                 <span class="proof-step-num">1</span>
                 <div>
                   <h4>Three documents in</h4>
                   <p>A claim form, a repair estimate or FIR, and the customer&rsquo;s incident description.</p>
+                  <p class="proof-step-extra">The estimate is used for accidents; the FIR for theft. Every field is read as-is.</p>
                 </div>
               </div>
-              <div class="proof-step">
+              <div class="proof-step" tabindex="0">
                 <span class="proof-step-num">2</span>
                 <div>
                   <h4>Structured extraction</h4>
                   <p>Every date, amount, part and flag is pulled out and validated — nothing is invented.</p>
+                  <p class="proof-step-extra">Dates, amounts and declared attachments become flags the checks can reason over.</p>
                 </div>
               </div>
-              <div class="proof-step">
+              <div class="proof-step" tabindex="0">
                 <span class="proof-step-num">3</span>
                 <div>
                   <h4>Deterministic checks</h4>
                   <p>Completeness, intimation windows, IDV limits and exclusion triggers are decided by rules, not opinion.</p>
+                  <p class="proof-step-extra">Each check maps to a clause in the policy document, with a pass / fail / escalate verdict.</p>
                 </div>
               </div>
-              <div class="proof-step">
+              <div class="proof-step" tabindex="0">
                 <span class="proof-step-num">4</span>
                 <div>
                   <h4>Clause-grounded report</h4>
                   <p>Contradictions are surfaced, citations expand to the source clause, and uncertain cases go to a human.</p>
+                  <p class="proof-step-extra">Approve, request information, escalate or reject — always with cited evidence.</p>
                 </div>
               </div>
             </div>
@@ -85,7 +89,7 @@
 
         <div class="recent" id="recent-section">
           <div class="recent-head">
-            <h2>Recent reviews</h2>
+            <h2>Recent reviews <span class="recent-count" id="recent-count">0</span></h2>
             <button class="btn btn-ghost" id="recent-refresh">Refresh</button>
           </div>
           <div class="recent-grid" id="recent-grid"></div>
