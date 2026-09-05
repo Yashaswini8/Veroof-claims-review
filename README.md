@@ -99,4 +99,4 @@ FIR window so every disposition path is reachable.
 
 ## Demo video
 
-> Demo video placeholder — link to be added.
+> Demo video: [link here]
