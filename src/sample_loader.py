@@ -26,3 +26,22 @@ def load_sample(sample_id: str) -> Optional[dict]:
         if sample["id"] == sample_id:
             return sample
     return None
+
+
+def read_sample_file(sample_id: str, file_name: str) -> Optional[str]:
+    """Read one document file (claim_form.md / estimate.md / etc.) for a sample."""
+    sample = load_sample(sample_id)
+    if sample is None:
+        return None
+    allowed = {
+        sample.get("claim_form"),
+        sample.get("second_document"),
+        sample.get("incident_description"),
+    }
+    if file_name not in allowed:
+        return None
+    path = os.path.join(CLAIMS_DIR, sample["dir"], file_name)
+    if not os.path.exists(path):
+        return None
+    with open(path, "r", encoding="utf-8") as fh:
+        return fh.read()

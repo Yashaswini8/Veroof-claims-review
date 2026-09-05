@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VeRoof — Claims Evidence, Reviewed.</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230e5a6d'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='%23ffffff' font-family='Georgia'>V</text></svg>" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand" id="brand-home" title="Back to overview">
+        <div class="brand-mark">V</div>
+        <div>
+          <div class="brand-name">VeRoof</div>
+          <div class="brand-tagline">Claims Evidence, Reviewed.</div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-soft" id="nav-samples">Sample claims</button>
+        <button class="btn btn-primary" id="nav-new">New review</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============================== LANDING ============================== -->
+    <section class="view active" id="view-landing">
+      <div class="container">
+        <div class="hero">
+          <div>
+            <span class="hero-eyebrow">&#9670; Motor claims intelligence</span>
+            <h1>Every damage story, checked<br /><span class="accent">against the policy.</span></h1>
+            <p class="hero-lead">
+              VeRoof reads the claim form, the repair estimate or FIR, and the
+              customer&rsquo;s own account of the incident — then reviews them
+              against a motor insurance policy clause by clause. The result is a
+              cited claim review: what&rsquo;s complete, what&rsquo;s consistent, which
+              clauses apply, and a clear recommendation.
+            </p>
+            <div class="hero-ctas">
+              <button class="btn btn-accent" id="hero-start">&#8594;&nbsp; Review a claim</button>
+              <button class="btn btn-ghost" id="hero-samples">Load a sample claim</button>
+            </div>
+            <p class="hero-note">
+              Accident or theft &middot; two-wheelers &amp; cars &middot; every finding cites its source document and clause.
+            </p>
+          </div>
+
+          <div class="proof-panel">
+            <div class="proof-title">&#9935;&nbsp; How a review works</div>
+            <div class="proof-steps">
+              <div class="proof-step">
+                <span class="proof-step-num">1</span>
+                <div>
+                  <h4>Three documents in</h4>
+                  <p>A claim form, a repair estimate or FIR, and the customer&rsquo;s incident description.</p>
+                </div>
+              </div>
+              <div class="proof-step">
+                <span class="proof-step-num">2</span>
+                <div>
+                  <h4>Structured extraction</h4>
+                  <p>Every date, amount, part and flag is pulled out and validated — nothing is invented.</p>
+                </div>
+              </div>
+              <div class="proof-step">
+                <span class="proof-step-num">3</span>
+                <div>
+                  <h4>Deterministic checks</h4>
+                  <p>Completeness, intimation windows, IDV limits and exclusion triggers are decided by rules, not opinion.</p>
+                </div>
+              </div>
+              <div class="proof-step">
+                <span class="proof-step-num">4</span>
+                <div>
+                  <h4>Clause-grounded report</h4>
+                  <p>Contradictions are surfaced, citations expand to the source clause, and uncertain cases go to a human.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="recent" id="recent-section">
+          <div class="recent-head">
+            <h2>Recent reviews</h2>
+            <button class="btn btn-ghost" id="recent-refresh">Refresh</button>
+          </div>
+          <div class="recent-grid" id="recent-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== SUBMIT ============================== -->
+    <section class="view" id="view-submit">
+      <div class="container">
+        <div class="submit-layout">
+          <aside class="stepper" id="stepper">
+            <div class="stepper-step done" data-step="1">
+              <span class="stepper-num">&#10003;</span>
+              <div>
+                <h4>Claim details</h4>
+                <p>Accident or theft &amp; claim type checks</p>
+              </div>
+            </div>
+            <div class="stepper-step" data-step="2">
+              <span class="stepper-num">2</span>
+              <div>
+                <h4>Documents</h4>
+                <p>Claim form + estimate / FIR + incident</p>
+              </div>
+            </div>
+            <div class="stepper-step" data-step="3">
+              <span class="stepper-num">3</span>
+              <div>
+                <h4>Reviewed report</h4>
+                <p>Cited findings, clauses, recommendation</p>
+              </div>
+            </div>
+          </aside>
+
+          <div>
+            <div class="submit-card">
+              <div class="card-head">
+                <h3><span>1.</span> Claim details</h3>
+              </div>
+              <div class="toggle-row">
+                <div>
+                  <div class="toggle-label">What kind of claim is this?</div>
+                  <div class="field-hint">Determines which documents are required and which policy checks run.</div>
+                </div>
+                <div class="seg" id="claim-type-seg">
+                  <button data-value="accident" class="active">Accident</button>
+                  <button data-value="theft">Theft</button>
+                </div>
+              </div>
+              <div class="reqdocs" id="reqdocs">
+                <span class="reqdocs-title">Required to proceed</span>
+              </div>
+            </div>
+
+            <div class="submit-card">
+              <div class="card-head">
+                <h3><span>2.</span> Claim form</h3>
+              </div>
+              <div class="card-actions">
+                <div class="select-wrap">
+                  <select id="sample-claim-form">
+                    <option value="">Load a sample claim form…</option>
+                  </select>
+                </div>
+                <button class="btn btn-soft" data-clear="claim_form">Clear</button>
+              </div>
+              <div class="field" style="margin-top:var(--sp-4)">
+                <label for="claim_form">Paste or type the claim form text</label>
+                <textarea id="claim_form" placeholder="Policy number, vehicle details, incident date, claimed amount, description…"></textarea>
+              </div>
+            </div>
+
+            <div class="submit-card">
+              <div class="card-head">
+                <h3><span>3.</span> <span id="second-doc-title">Repair estimate</span></h3>
+                <span class="tag" id="second-doc-tag">For accident claims</span>
+              </div>
+              <div class="card-actions">
+                <div class="select-wrap">
+                  <select id="sample-second">
+                    <option value="">Load a sample estimate…</option>
+                  </select>
+                </div>
+                <button class="btn btn-soft" data-clear="second_document">Clear</button>
+              </div>
+              <div class="field" style="margin-top:var(--sp-4)">
+                <label for="second_document" id="second-doc-label">Paste or type the repair estimate text</label>
+                <textarea id="second_document" placeholder="Damage list, itemized costs, surveyor notes…"></textarea>
+              </div>
+            </div>
+
+            <div class="submit-card">
+              <div class="card-head">
+                <h3><span>4.</span> Incident description</h3>
+              </div>
+              <div class="card-actions">
+                <div class="select-wrap">
+                  <select id="sample-incident">
+                    <option value="">Load a sample description…</option>
+                  </select>
+                </div>
+                <button class="btn btn-soft" data-clear="incident_description">Clear</button>
+              </div>
+              <div class="field" style="margin-top:var(--sp-4)">
+                <label for="incident_description">What does the customer say happened?</label>
+                <textarea id="incident_description" placeholder="The incident in the customer's own words, free text…"></textarea>
+              </div>
+            </div>
+
+            <div class="submit-bar">
+              <div>
+                <button class="btn btn-ghost" id="reset-all">Reset everything</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:var(--sp-4)">
+                <span class="submit-hint" id="submit-hint"></span>
+                <button class="btn btn-primary" id="run-review">&#9654;&nbsp; Run claim review</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== PROGRESS ============================== -->
+    <section class="view" id="view-progress">
+      <div class="container">
+        <div class="progress-wrap">
+          <div class="brand-mark">V</div>
+          <h2 class="progress-title">Reviewing the claim</h2>
+          <p class="progress-sub" id="progress-sub">Running the review pipeline — this takes a few seconds.</p>
+          <div class="stage-list" id="stage-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== REPORT ============================== -->
+    <section class="view" id="view-report">
+      <div class="container">
+        <div class="report-wrap" id="report-root"></div>
+      </div>
+    </section>
+
+    <!-- ============================== ERROR ============================== -->
+    <section class="view" id="view-error">
+      <div class="container">
+        <div class="state-card">
+          <div class="state-icon">&#9888;</div>
+          <h2 id="error-title">Something went wrong</h2>
+          <p id="error-message">The review could not be completed.</p>
+          <div class="error-detail" id="error-detail" style="display:none"></div>
+          <div style="margin-top:var(--sp-5)">
+            <button class="btn btn-primary" id="error-back">Back to review</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <span>VeRoof — Claims Evidence, Reviewed. &middot; Motor insurance claim review for two-wheelers &amp; cars.</span>
+      <span>Backend: Python &middot; Reasoning &amp; embeddings: Gemini &middot; Track PS02</span>
+    </div>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

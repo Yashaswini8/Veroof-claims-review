@@ -164,6 +164,7 @@ def _score(index: dict, qvec: np.ndarray) -> list:
                 title=clause["title"],
                 quote=clause["text"][:400],
                 relevance=f"Similarity {float(scores[i]):.2f}",
+                full_text=clause["text"],
             )
         )
     return hits
@@ -195,6 +196,7 @@ def _lexical_retrieve(payload, docs) -> list:
                 title=c["title"],
                 quote=c["text"][:400],
                 relevance=f"{count} keyword(s) matched",
+                full_text=c["text"],
             )
         )
         if len(hits) >= TOP_K:

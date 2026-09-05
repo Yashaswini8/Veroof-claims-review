@@ -89,8 +89,9 @@ class CheckResult(BaseModel):
 class ClauseHit(BaseModel):
     number: str
     title: str
-    quote: str
+    quote: str = ""
     relevance: str = ""
+    full_text: str = ""
 
 
 class ReportFinding(BaseModel):

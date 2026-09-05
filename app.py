@@ -44,6 +44,18 @@ def create_app():
     def list_samples():
         return sample_loader.list_samples()
 
+    @app.get("/api/sample-file")
+    def sample_file(sample: str, file: str):
+        import os
+
+        from fastapi import Query
+        from fastapi.responses import PlainTextResponse
+
+        text = sample_loader.read_sample_file(sample, file)
+        if text is None:
+            return PlainTextResponse("not found", status_code=404)
+        return PlainTextResponse(text)
+
     @app.get("/api/reviews")
     def list_reviews():
         return {"reviews": jobs.list_review_summaries()}
@@ -62,7 +74,7 @@ def create_app():
         except ValueError as exc:
             return JSONResponse(status_code=422, content={"error": str(exc)})
         job = jobs.create()
-        job.record_stage("queueing", "Queued for review")
+        job.record_stage("Queued for review")
         thread = threading.Thread(
             target=pipeline.run_review, args=(job, payload), daemon=True
         )
