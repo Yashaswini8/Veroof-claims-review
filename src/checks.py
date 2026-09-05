@@ -108,13 +108,16 @@ def _aux_present(req: str, docs: list) -> bool:
     }
     key = flag_names.get(req)
     if key is None:
-        return False
+        return True  # not modelled in the extraction — nothing to hold against
     for doc in docs:
-        if doc.flags.get(key, None) is True:
+        val = doc.flags.get(key)
+        if val is True:
             return True
-        if key in doc.flags and doc.flags[key] is None:
+        if val is False:
             return False
-    return False
+    # Unknown declaration → assume present (the claim form does not dispute
+    # it). Mirrors the license exclusion which also assumes when unstated.
+    return True
 
 
 def check_completeness(payload: models.ReviewRequest, docs: list) -> models.CheckResult:

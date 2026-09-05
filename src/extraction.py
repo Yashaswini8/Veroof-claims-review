@@ -61,6 +61,11 @@ Return a strict JSON object with exactly these keys:
     - under_influence (any mention of alcohol/drugs affecting driving?)
     - pre_existing_damage (any indication of damage not related to this incident?)
     - third_party_involved
+  The claim form usually carries a "Checklist of Submissions" section listing attached
+  documents (e.g. "FIR copy — attached", "Key handover — will be submitted later").
+  For rc_submitted, policy_schedule_submitted, key_handover_submitted and noc_submitted:
+  set true when that document is listed as attached/provided/submitted, false when listed
+  as later/missing/pending/none, and null only when the checklist does not mention it.
   For each flag, set true/false only if the text gives evidence; otherwise null. NEVER set commercial_use true just because the vehicle is a taxi-type model — only if the text describes actual commercial use.
 - description: a concise summary of the incident/damage in the document (2-4 sentences)
 - raw_quote: the single most fact-bearing sentence from the document, verbatim.
