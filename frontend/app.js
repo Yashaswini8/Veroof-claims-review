@@ -68,7 +68,7 @@ const DISPOSITIONS = {
 /* ---------- Required documents per claim type --------------------------- */
 
 const REQ_DOCS = {
-  accident: ["Claim form", "Repair estimate", "FIR (if 3rd party involved)"],
+  accident: ["Claim form", "Repair estimate"],
   theft: [
     "Claim form",
     "FIR (within 24h)",
@@ -212,10 +212,12 @@ function bindSampleSelects() {
 function setClaimType(type) {
   state.claimType = type;
   const seg = $("#claim-type-seg");
-  $$("button", seg).forEach((b) => {
+  seg.querySelectorAll("button").forEach((b) => {
     b.classList.toggle("active", b.dataset.value === type);
   });
   const isAccident = type === "accident";
+  const theftCard = $("#theft-docs-card");
+  if (theftCard) theftCard.hidden = isAccident;
   $("#second-doc-title").textContent = isAccident ? "Repair estimate" : "FIR";
   $("#second-doc-tag").textContent = isAccident
     ? "For accident claims"
@@ -256,6 +258,19 @@ function updateRequiredDocs() {
     tag.innerHTML = isCore ? "&#9679;&nbsp; " + esc(d) : "&#10003;&nbsp; " + esc(d);
     zone.appendChild(tag);
   });
+
+  // Theft-only attachments (RC, policy schedule, key handover, NOC) render as
+  // their own distinct panel, visible only while a theft claim is selected.
+  const theftList = $("#theft-docs-list");
+  if (theftList) {
+    theftList.innerHTML = `<span class="reqdocs-title">Required to proceed</span>`;
+    REQ_DOCS.theft.slice(2).forEach((d) => {
+      const tag = document.createElement("span");
+      tag.className = "reqdocs-tag";
+      tag.innerHTML = "&#10003;&nbsp; " + esc(d);
+      theftList.appendChild(tag);
+    });
+  }
   if (state.claimType === "accident" && !hasSecond) {
     // first-level hint under the estimate field handled by placeholder
   }
