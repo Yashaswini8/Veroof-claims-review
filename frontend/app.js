@@ -463,10 +463,16 @@ function renderReport(report) {
   // Disposition banner
   const banner = document.createElement("div");
   banner.className = `disposition-banner ${disp.cls}`;
+  const reason = dispositionReason(report);
   banner.innerHTML = `
     <div class="disp-icon">${disp.icon}</div>
     <div>
-      <h3>${esc(disp.label)}</h3>
+      <h3>${esc(disp.label)}
+        <span class="why-host" tabindex="0" role="note">
+          <span class="why-glyph">&#9432;</span>
+          <span class="why-tip">${esc(reason)}</span>
+        </span>
+      </h3>
       <p>${esc(disp.blurb)}</p>
       <p style="margin-top:var(--sp-2);color:var(--ink-soft)">${esc(report.summary)}</p>
     </div>`;
@@ -592,6 +598,32 @@ function downloadReportMarkdown(report) {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+function dispositionReason(report) {
+  const reasons = [];
+  const contradictions = (report.contradictions || []).filter((c) => c.severity === "contradiction");
+  const findings = report.findings || [];
+  const miss = (report.required_docs || {}).missing || [];
+  const fails = findings.filter((f) => String(f.status || "").toLowerCase() === "fail");
+  const escos = findings.filter((f) => String(f.status || "").toLowerCase() === "escalate");
+
+  if (contradictions.length) {
+    const c = contradictions[0];
+    const extra = contradictions.length === 1 && c.summary ? `: ${c.summary}` : "";
+    reasons.push(`${contradictions.length} cross-document contradiction${contradictions.length > 1 ? "s" : ""}${extra}`);
+  }
+  if (fails.length) reasons.push(`${fails.length} failed check${fails.length > 1 ? "s" : ""}`);
+  if (escos.length && report.disposition === "escalate") reasons.push(`${escos.length} finding${escos.length > 1 ? "s" : ""} flagged for escalation`);
+  if (miss.length) reasons.push(`missing: ${miss.join(", ")}`);
+
+  if (reasons.length === 0) {
+    if (report.disposition === "approve") return "All required documents present, no contradictions, and every check passed.";
+    if (report.disposition === "reject") return "Exclusion-based finding in the documentation review.";
+    if (report.disposition === "request_info") return "Information is pending confirmation before this claim can be decided.";
+    return "See the checks and findings below for the full reasoning.";
+  }
+  return reasons.join("; ") + ".";
 }
 
 function completenessSection(report) {
