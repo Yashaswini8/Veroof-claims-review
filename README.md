@@ -47,7 +47,7 @@ set GEMINI_API_KEY=your-key        # Windows
 export GEMINI_API_KEY=your-key     # macOS/Linux
 ```
 
-With a key present, extraction uses `gemini-2.0-flash` and policy embedding
+With a key present, extraction uses `gemini-3.6-flash` and policy embedding
 uses `gemini-embedding-001`, cached in `data/embeddings`. Without a key,
 deterministic parsers and lexicon retrieval produce the same structured
 output and the same dispositions for all shipped samples.

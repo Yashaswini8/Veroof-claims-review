@@ -40,10 +40,14 @@ def main():
         state = run_one(sid)
         status = state.get("status")
         if status == "error":
-            print(f"ERR  {sid}: pipeline error: {state.get('error')}")
+            print(f"ERR  {sid}: pipeline error: {str(state.get('error'))[:200]}")
             failures += 1
             continue
         report = state.get("report") or {}
+        if not report:
+            print(f"ERR  {sid}: status={status} no report (stages={state.get('stages')})")
+            failures += 1
+            continue
         got = report.get("disposition", "MISSING_REPORT")
         n_contra = sum(
             1 for c in report.get("contradictions", []) if c.get("severity") == "contradiction"

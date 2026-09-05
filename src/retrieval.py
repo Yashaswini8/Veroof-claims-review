@@ -100,21 +100,24 @@ def retrieve_clauses(payload, docs) -> list:
     """
     from src import models
 
+    client = _client()
+    if client is None:
+        # No API key: never touch the cache (query embedding needs the API).
+        return _lexical_retrieve(payload, docs)
+
     index = _load_cache()
     if index is None:
         # First run without a precomputed index.
-        client = _client()
-        if client is not None:
-            chunks = policy.chunk_policy()
-            build_and_cache(client, chunks)
-            index = _load_cache()
+        chunks = policy.chunk_policy()
+        build_and_cache(client, chunks)
+        index = _load_cache()
         if index is None:
             # No key and no cache: fall back to lexical scoring so the app still
             # returns grounded clause citations (never invented ones).
             return _lexical_retrieve(payload, docs)
 
     query = _build_query(payload, docs)
-    qvec = np.array(_embed_texts(_client(), [query])[0], dtype="float32")
+    qvec = np.array(_embed_texts(client, [query])[0], dtype="float32")
     return _score(index, qvec)
 
 

@@ -6,3 +6,5 @@ venv/
 *.log
 .pytest_cache/
 node_modules/
+data/embeddings_cache.json
+data/embeddings_bundle.npz
