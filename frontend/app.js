@@ -139,20 +139,37 @@ async function loadSamples() {
   }
 }
 
+let sampleApplySeq = 0; // generation token: never let a stale load clobber a newer one
+
 async function applySample(sampleId) {
   const sample = state.samples.find((s) => s.id === sampleId);
   if (!sample) return;
+  const seq = ++sampleApplySeq;
+
+  // Reset every zone *before* populating, so a half-finished or failed load
+  // can never leave the previous sample's text in place.
+  ["claim_form", "second_document", "incident_description"].forEach((id) => {
+    $("#" + id).value = "";
+  });
+  setClaimType(sample.claim_type);
+
   try {
-    const dir = sample.dir;
-    const read = async (file) => {
-      const r = await fetch(`${API}/sample-file?sample=${encodeURIComponent(sampleId)}&file=${encodeURIComponent(file)}`);
-      if (!r.ok) throw new Error("file fetch failed");
-      return r.text();
-    };
-    $("#claim_form").value = await read(sample.claim_form);
-    $("#second_document").value = await read(sample.second_document);
-    $("#incident_description").value = await read(sample.incident_description);
-    setClaimType(sample.claim_type);
+    const read = (file) =>
+      fetch(`${API}/sample-file?sample=${encodeURIComponent(sampleId)}&file=${encodeURIComponent(file)}`)
+        .then((r) => {
+          if (!r.ok) throw new Error("file fetch failed");
+          return r.text();
+        });
+    const [form, second, incident] = await Promise.all([
+      read(sample.claim_form),
+      read(sample.second_document),
+      read(sample.incident_description),
+    ]);
+    if (seq !== sampleApplySeq) return; // a newer selection happened meanwhile
+
+    $("#claim_form").value = form;
+    $("#second_document").value = second;
+    $("#incident_description").value = incident;
     // Visually indicate which zone was used to load.
     ["sample-claim-form", "sample-second", "sample-incident"].forEach((id) => {
       const sel = $("#" + id);
@@ -163,6 +180,7 @@ async function applySample(sampleId) {
     });
     updateInputHints();
   } catch (e) {
+    if (seq !== sampleApplySeq) return;
     showError("Could not load the sample claim", String(e));
   }
 }
