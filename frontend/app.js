@@ -440,7 +440,9 @@ function renderReport(report) {
   toolbar.className = "report-toolbar";
   toolbar.innerHTML = `
     <h2>Claim review report</h2>
-    <div style="display:flex;gap:var(--sp-2)">
+    <div style="display:flex;gap:var(--sp-2);flex-wrap:wrap">
+      <button class="btn btn-ghost" id="report-download">&#8681;&nbsp; Download report</button>
+      <button class="btn btn-ghost" id="report-print">&#128424;&nbsp; Print / PDF</button>
       <button class="btn btn-ghost" id="report-back">&#8592;&nbsp; Back</button>
       <button class="btn btn-primary" id="report-new">&#65291;&nbsp; New review</button>
     </div>`;
@@ -473,6 +475,8 @@ function renderReport(report) {
   // Findings
   grid.appendChild(findingsSection(report));
 
+  $("#report-download").addEventListener("click", () => downloadReportMarkdown(report));
+  $("#report-print").addEventListener("click", () => window.print());
   $("#report-back").addEventListener("click", () => {
     showView("view-landing");
     loadRecent();
@@ -481,6 +485,101 @@ function renderReport(report) {
     showView("view-submit");
     updateRequiredDocs();
   });
+}
+
+function buildReportMarkdown(report) {
+  const disp = DISPOSITIONS[report.disposition] || DISPOSITIONS.escalate;
+  const L = [];
+  L.push("# Claim review report");
+  L.push("");
+  L.push(`- **Disposition:** ${disp.label}`);
+  L.push(`- **Generated:** ${new Date().toLocaleString()}`);
+  L.push("");
+  L.push("## Summary");
+  L.push(report.summary || "");
+  L.push("");
+
+  const rd = report.required_docs || { required: [], present: [], missing: [] };
+  L.push("## Document completeness");
+  if ((rd.missing || []).length === 0) {
+    L.push("All required documents are present.");
+  } else {
+    L.push(`Missing: ${rd.missing.join(", ")}`);
+    if ((rd.present || []).length) L.push(`Present: ${rd.present.join(", ")}`);
+  }
+  L.push("");
+
+  const cons = report.contradictions || [];
+  const contradictions = cons.filter((c) => c.severity === "contradiction");
+  const agreements = cons.filter((c) => c.severity === "agreement");
+  L.push("## Cross-document consistency");
+  if (contradictions.length === 0) {
+    L.push("No contradictions detected across the three documents.");
+  } else {
+    contradictions.forEach((c) => {
+      const src = c.between && c.between.length ? ` (Between: ${c.between.join(" & ")})` : "";
+      L.push(`- **${c.summary}**${src}. ${c.details || ""}`);
+    });
+  }
+  if (agreements.length) {
+    L.push("");
+    L.push(`Agreements noted: ${agreements.map((a) => a.summary).join(" ")}`);
+  }
+  L.push("");
+
+  const clauses = report.clauses || [];
+  L.push("## Applicable policy clauses");
+  if (clauses.length === 0) {
+    L.push("No clauses were retrieved for this claim.");
+  } else {
+    clauses.forEach((cl) => {
+      const num = cl.number ? ` ${cl.number} —` : "";
+      L.push(`### Clause${num} ${cl.title || ""}`);
+      if (cl.relevance) L.push(`*Relevance:* ${cl.relevance}`);
+      L.push("");
+      const quote = cl.quote || cl.full_text || "";
+      L.push(`> ${quote.replace(/\n+/g, "\n> ")}`);
+      if (cl.full_text && cl.full_text !== quote) {
+        L.push("");
+        L.push(`<details>`);
+        L.push(`<summary>Full clause text</summary>`);
+        L.push("");
+        L.push(cl.full_text);
+        L.push("");
+        L.push(`</details>`);
+      }
+      L.push("");
+    });
+  }
+
+  const findings = report.findings || [];
+  L.push("## All findings");
+  if (findings.length === 0) {
+    L.push("No findings.");
+  } else {
+    findings.forEach((f) => {
+      L.push(`- **${String(f.status || "").toUpperCase()}** — ${f.title}. ${f.detail || ""}`);
+    });
+  }
+  L.push("");
+
+  L.push("## Recommendation");
+  L.push(`${disp.label}. ${report.recommendation || ""}`);
+  L.push("");
+  return L.join("\n");
+}
+
+function downloadReportMarkdown(report) {
+  const md = buildReportMarkdown(report);
+  const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "veroof-report.md";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
 
 function completenessSection(report) {
