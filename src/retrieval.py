@@ -42,9 +42,12 @@ def _client():
 
 def _embed_texts(client, texts: list[str]) -> list[list[float]]:
     """Embed a list of texts with gemini-embedding-001."""
-    result = client.models.embed_content(
-        model=EMBED_MODEL,
-        contents=texts,
+    from src.ai_runner import call_embed_content
+
+    result = call_embed_content(
+        client,
+        EMBED_MODEL,
+        texts,
         config={"outputDimensionality": 768},
     )
     return [emb.values for emb in result.embeddings]

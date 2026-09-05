@@ -58,9 +58,12 @@ Return ONLY the JSON array, no commentary, no markdown fences."""
 
 
 def _llm_check(client, claim_form, second_kind, second_document, incident_description) -> list[models.ConsistencyFinding]:
-    resp = client.models.generate_content(
-        model=MODEL,
-        contents=prompt_template.format(
+    from src.ai_runner import call_generate_content
+
+    resp = call_generate_content(
+        client,
+        MODEL,
+        prompt_template.format(
             claim_form=claim_form,
             second_kind=second_kind,
             second_document=second_document,

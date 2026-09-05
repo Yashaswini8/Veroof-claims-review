@@ -78,8 +78,12 @@ Return ONLY the JSON, no commentary, no markdown fences."""
 
 
 def _extract_llm(client, doc_type: str, text: str) -> dict:
-    resp = client.models.generate_content(
-        model=MODEL, contents=prompt_template.format(doc_type=doc_type, document=text)
+    from src.ai_runner import call_generate_content
+
+    resp = call_generate_content(
+        client,
+        MODEL,
+        prompt_template.format(doc_type=doc_type, document=text),
     )
     raw = resp.text
     raw = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw.strip(), flags=re.M)
