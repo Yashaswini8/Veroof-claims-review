@@ -90,7 +90,21 @@
         <div class="recent" id="recent-section">
           <div class="recent-head">
             <h2>Recent reviews <span class="recent-count" id="recent-count">0</span></h2>
-            <button class="btn btn-ghost" id="recent-refresh">Refresh</button>
+            <div class="recent-tools">
+              <select id="recent-filter-disposition">
+                <option value="">All dispositions</option>
+                <option value="approve">Approve</option>
+                <option value="request_info">Request info</option>
+                <option value="escalate">Escalate</option>
+                <option value="reject">Reject</option>
+              </select>
+              <select id="recent-filter-type">
+                <option value="">All claim types</option>
+                <option value="accident">Accident</option>
+                <option value="theft">Theft</option>
+              </select>
+              <button class="btn btn-ghost" id="recent-refresh">Refresh</button>
+            </div>
           </div>
           <div class="recent-grid" id="recent-grid"></div>
         </div>

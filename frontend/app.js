@@ -103,6 +103,18 @@ function bindNav() {
   $("#reset-all").addEventListener("click", resetAll);
   $("#error-back").addEventListener("click", () => showView("view-submit"));
   $("#recent-refresh").addEventListener("click", loadRecent);
+
+  const bindRecentFilters = () => {
+    $("#recent-filter-disposition").addEventListener("change", (e) => {
+      state.recentFilters.disposition = e.target.value;
+      loadRecent();
+    });
+    $("#recent-filter-type").addEventListener("change", (e) => {
+      state.recentFilters.type = e.target.value;
+      loadRecent();
+    });
+  };
+  bindRecentFilters();
 }
 
 function jumpToSampleSelect() {
