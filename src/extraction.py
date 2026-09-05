@@ -156,7 +156,9 @@ def extract_one(doc_type: str, text: str) -> models.ExtractedDocument:
     if client is not None:
         try:
             data = _extract_llm(client, doc_type, text)
-            return _normalize(data, doc_type)
+            doc = _normalize(data, doc_type)
+            _backfill_normative_dates(doc, doc_type, text)
+            return doc
         except Exception as exc:  # noqa: BLE001 - fall back to deterministic
             if not _FALLBACK_ENABLED:
                 raise
@@ -167,6 +169,30 @@ def extract_one(doc_type: str, text: str) -> models.ExtractedDocument:
     if client is not None and _FALLBACK_ENABLED:
         doc.notes = "LLM extraction failed; used deterministic fallback."
     return doc
+
+
+def _backfill_normative_dates(
+    doc: models.ExtractedDocument, doc_type: str, text: str
+) -> None:
+    """Ensure explicit label/value dates in the text are never lost.
+
+    The LLM is told to set dates to null when absent, but a concise model may
+    omit an *explicitly stated* date (e.g. the FIR's "Date of Report"). We read
+    the same text through the deterministic label parser and fill in any
+    normative date the LLM left empty, so the deterministic date checks act on
+    the actual evidence rather than a model omission.
+    """
+    fallback = _deterministic_extract(doc_type, text)
+    if not doc.incident_date and fallback.incident_date:
+        doc.incident_date = fallback.incident_date
+    for flag in (
+        "fir_date",
+        "intimation_date",
+        "policy_valid_from",
+        "policy_valid_until",
+    ):
+        if not doc.flags.get(flag) and fallback.flags.get(flag):
+            doc.flags[flag] = fallback.flags[flag]
 
 
 def extract_all(payload: models.ReviewRequest) -> list[models.ExtractedDocument]:
