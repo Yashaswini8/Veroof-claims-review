@@ -189,9 +189,11 @@ def build_report(
     clauses: list[models.ClauseHit],
     checks: list[models.CheckResult],
 ) -> models.ReviewReport:
+    from src import checks as checks_mod
+
     disposition = _decide_disposition(checks, contradictions)
     findings = _build_findings(checks, contradictions, clauses, payload)
-    completeness = _completeness_status(checks)
+    completeness = checks_mod.check_doc_presence(payload, docs)
     summary = _build_summary(payload, disposition, contradictions, checks, clauses)
     recommendation = _build_recommendation(disposition, checks, contradictions, payload)
 
