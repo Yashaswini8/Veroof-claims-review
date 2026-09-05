@@ -20,8 +20,9 @@ const esc = (s) =>
     .replace(/"/g, "&quot;");
 
 function showView(name) {
+  const id = name.indexOf("view-") === 0 ? name : "view-" + name;
   $$(".view").forEach((v) => v.classList.remove("active"));
-  const target = $("#view-" + name);
+  const target = $("#" + id);
   if (target) target.classList.add("active");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
