@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Can a Model Learn a Rule From Examples?</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%233b6cb4'/><text x='50' y='66' font-size='44' text-anchor='middle' fill='white' font-family='system-ui'>R</text></svg>" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ================================================================== -->
+  <!-- INTRO                                                              -->
+  <!-- ================================================================== -->
+  <header class="intro" id="intro">
+    <div class="container">
+      <span class="intro-badge">Interactive Educational Experiment</span>
+      <h1 class="intro-title">Can a Model Learn a Rule From Examples?</h1>
+      <p class="intro-lead">
+        A model can learn a pattern from demonstrations. But what happens
+        when an important part of the rule was never demonstrated?
+      </p>
+      <p class="intro-sub">
+        This experiment lets you control which demonstrations a toy learner
+        sees, then watch how missing coverage causes systematic failure on
+        an unseen test case.
+      </p>
+      <button class="btn btn-primary btn-lg" id="btn-start">Start Experiment</button>
+      <p class="intro-hint">Takes about 1 minute. No login required.</p>
+    </div>
+  </header>
+
+  <!-- ================================================================== -->
+  <!-- EXPERIMENT                                                         -->
+  <!-- ================================================================== -->
+  <main class="experiment hidden" id="experiment">
+
+    <!-- Step indicator -->
+    <nav class="step-bar" id="step-bar">
+      <div class="container step-bar-inner">
+        <div class="step-pill active" data-step="1">1. Demos</div>
+        <div class="step-pill" data-step="2">2. Learner</div>
+        <div class="step-pill" data-step="3">3. Test</div>
+        <div class="step-pill" data-step="4">4. Explain</div>
+        <div class="step-pill" data-step="5">5. Explore</div>
+      </div>
+    </nav>
+
+    <div class="container experiment-body">
+
+      <!-- ==================== SECTION 1: Demonstrations ==================== -->
+      <section class="panel" id="panel-demos">
+        <div class="panel-head">
+          <h2>Input → Output Demonstrations</h2>
+          <p class="panel-sub">These are the examples the learner will study. Toggle each one on or off.</p>
+        </div>
+
+        <div class="task-selector">
+          <span class="label-sm">Task:</span>
+          <div class="task-tabs" id="task-tabs"></div>
+        </div>
+
+        <div class="demo-grid" id="demo-grid"></div>
+
+        <div class="panel-actions">
+          <button class="btn btn-ghost" id="btn-select-all">Select All</button>
+          <button class="btn btn-ghost" id="btn-deselect-all">Deselect All</button>
+          <button class="btn btn-accent" id="btn-reset-guided">Reset to Guided Demo</button>
+        </div>
+      </section>
+
+      <!-- ==================== SECTION 2: Coverage ==================== -->
+      <section class="panel" id="panel-coverage">
+        <div class="panel-head">
+          <h2>Coverage Analysis</h2>
+          <p class="panel-sub">Which rule conditions do the selected demonstrations actually establish?</p>
+        </div>
+
+        <div class="coverage-bar-wrap">
+          <div class="coverage-bar-bg">
+            <div class="coverage-bar-fill" id="coverage-fill"></div>
+          </div>
+          <span class="coverage-pct" id="coverage-pct">0%</span>
+        </div>
+
+        <div class="coverage-grid" id="coverage-grid"></div>
+      </section>
+
+      <!-- ==================== SECTION 3: Learner State ==================== -->
+      <section class="panel" id="panel-learner">
+        <div class="panel-head">
+          <h2>Toy Recurrent Learner State</h2>
+          <p class="panel-sub">
+            <strong>Educational toy recurrent learner — not BDH-CQ.</strong>
+            Process each demonstration in sequence. Observe the internal state update.
+          </p>
+        </div>
+
+        <div class="learner-flow" id="learner-flow"></div>
+
+        <button class="btn btn-primary" id="btn-run-learner">Run Learner on Demos</button>
+
+        <div class="learner-state-box" id="learner-state-box">
+          <h3>Current Memory State</h3>
+          <div class="learner-state-content" id="learner-state-content">
+            <p class="muted">Run the learner to see its state.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== SECTION 4: Test & Competing Rules ========== -->
+      <section class="panel" id="panel-test">
+        <div class="panel-head">
+          <h2>Unseen Test Case &amp; Prediction</h2>
+          <p class="panel-sub">The test case is not among the selected demonstrations.</p>
+        </div>
+
+        <div class="test-controls">
+          <label class="label-sm">Test Input:</label>
+          <div class="test-input-group" id="test-input-group"></div>
+        </div>
+
+        <div class="test-result" id="test-result">
+          <div class="test-card">
+            <span class="test-label">Test Input</span>
+            <span class="test-val" id="test-input-val">—</span>
+          </div>
+          <div class="test-card">
+            <span class="test-label">Model Prediction</span>
+            <span class="test-val" id="test-pred-val">—</span>
+          </div>
+          <div class="test-card">
+            <span class="test-label">Ground Truth</span>
+            <span class="test-val" id="test-gt-val">—</span>
+          </div>
+          <div class="test-card test-verdict-card">
+            <span class="test-label">Result</span>
+            <span class="test-verdict" id="test-verdict">—</span>
+          </div>
+        </div>
+
+        <div class="explanation-box" id="test-explanation"></div>
+      </section>
+
+      <!-- ==================== SECTION 5: Competing Rules ================== -->
+      <section class="panel" id="panel-competing">
+        <div class="panel-head">
+          <h2>Competing Rules Analysis</h2>
+          <p class="panel-sub">Multiple rules can explain the same limited demonstrations. Which ones fit?</p>
+        </div>
+
+        <div class="competing-table-wrap" id="competing-table-wrap">
+          <table class="competing-table" id="competing-table">
+            <thead>
+              <tr>
+                <th>Candidate Rule</th>
+                <th>Fits Demos?</th>
+                <th>Prediction for Test Case</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="competing-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="competing-explanation" id="competing-explanation"></div>
+      </section>
+
+      <!-- ==================== GUIDED PROMPTS ============================== -->
+      <div class="guided-prompt" id="guided-prompt">
+        <div class="guided-prompt-inner" id="guided-prompt-inner"></div>
+      </div>
+
+      <!-- ==================== FREE EXPLORATION ============================ -->
+      <section class="panel panel-free hidden" id="panel-free">
+        <div class="panel-head">
+          <h2>Free Exploration</h2>
+          <p class="panel-sub">
+            Try different demonstration sets, test cases, and tasks.
+            Observe how coverage affects prediction.
+          </p>
+        </div>
+
+        <div class="exploration-controls">
+          <button class="btn btn-ghost" id="btn-explore-reset">Reset Experiment</button>
+          <button class="btn btn-ghost" id="btn-explore-guided">Back to Guided Flow</button>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ================================================================== -->
+  <!-- BDH-CQ INTEGRATION                                                 -->
+  <!-- ================================================================== -->
+  <section class="support-section hidden" id="section-bdhcq">
+    <div class="container">
+      <div class="support-card">
+        <h2>Connection to BDH-CQ</h2>
+        <p>
+          <strong>BDH-CQ</strong> (Behavioral Domain Hypothesis - Continuous Quality)
+          is a real research system that learns from demonstrations using recurrent
+          or contextual memory and applies that information to unfamiliar ARC-style tasks.
+        </p>
+
+        <div class="bdhcq-diagram">
+          <div class="diagram-node">Demonstrations</div>
+          <div class="diagram-arrow">&darr;</div>
+          <div class="diagram-node diagram-node-mem">Contextual / Recurrent Memory</div>
+          <div class="diagram-arrow">&darr;</div>
+          <div class="diagram-node">New Task</div>
+          <div class="diagram-arrow">&darr;</div>
+          <div class="diagram-node diagram-node-out">Prediction</div>
+        </div>
+
+        <p>
+          This toy experiment isolates one educational lesson: <em>recurrent or
+          contextual memory can process demonstrations, but the demonstrations
+          still need to provide enough information to distinguish the intended rule
+          from competing rules.</em>
+        </p>
+        <p class="bdhcq-note">
+          Our toy learner is <strong>not</strong> the official BDH-CQ system.
+          It is a simplified educational artifact inspired by the problem of
+          learning from demonstrations. It does not reproduce BDH-CQ's
+          architecture, training procedure, or internal behavior.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <!-- TAKEAWAYS                                                          -->
+  <!-- ================================================================== -->
+  <section class="support-section hidden" id="section-takeaways">
+    <div class="container">
+      <div class="support-card">
+        <h2>What Did You Learn?</h2>
+        <ol class="takeaway-list">
+          <li>
+            <strong>Demonstrations provide evidence</strong> about a hidden rule.
+            They are samples, not the rule itself.
+          </li>
+          <li>
+            <strong>Multiple rules can fit</strong> the same limited set of
+            demonstrations. Ambiguity is the default, not the exception.
+          </li>
+          <li>
+            <strong>Coverage means meaningful rule conditions</strong>, not just
+            more examples. One strategic demonstration can be worth many redundant ones.
+          </li>
+          <li>
+            <strong>Missing coverage causes systematic extrapolation failure</strong>
+            — the model's prediction is wrong in a predictable,
+            explainable way because the evidence was never provided.
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <!-- LIMITATIONS                                                        -->
+  <!-- ================================================================== -->
+  <section class="support-section hidden" id="section-limitations">
+    <div class="container">
+      <div class="support-card">
+        <h2>Limitations</h2>
+        <ul class="limitation-list">
+          <li>The model in this experiment is an <strong>educational toy</strong>, not a real neural network or language model.</li>
+          <li>The experiment isolates a <strong>specific controlled phenomenon</strong> — it does not demonstrate universal behavior.</li>
+          <li><strong>More demonstrations do not always improve performance.</strong> Informative coverage matters more than quantity.</li>
+          <li>Results from this toy should <strong>not be generalized</strong> to every model or every task.</li>
+          <li>Real LLMs use far more complex learning mechanisms; this experiment teaches a conceptual lesson about demonstration-based learning.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <!-- REFERENCES                                                         -->
+  <!-- ================================================================== -->
+  <section class="support-section hidden" id="section-references">
+    <div class="container">
+      <div class="support-card">
+        <h2>Research References</h2>
+        <ul class="ref-list">
+          <li>DataForge 2026 Pathway Track — Challenge specification</li>
+          <li>BDH-CQ: Behavioral Domain Hypothesis — Continuous Quality research project</li>
+          <li>ARC (Abstraction and Reasoning Corpus) — François Chollet, 2019</li>
+          <li>On the Measure of Intelligence — F. Chollet, 2019</li>
+          <li>Scaling LLM Test-Time Compute — DeepMind, 2024</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <!-- CREDITS                                                            -->
+  <!-- ================================================================== -->
+  <footer class="site-footer hidden" id="section-credits">
+    <div class="container">
+      <p class="footer-line">DataForge 2026 Pathway Track — Demonstration Coverage &amp; Extrapolation</p>
+      <p class="footer-line footer-small">
+        Educational interactive experiment. All computation runs locally in your browser.
+        No API keys, accounts, or external services required.
+      </p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
